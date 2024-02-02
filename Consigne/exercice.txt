@@ -1,0 +1,17 @@
+1) Faire le garage de voiture avec Hashmap au lieu de Vector
+
+2) Application => BD garage
+
+3) Interface Graphique
+
+
+bd Test PC portable (SYS admin etc) mdp: root
+
+
+
+Tant que je n'ai pas fait le manifest, pour lancer .jar:
+
+java -cp RocheJava.jar fr.araujo.voiturev2.programme.Programme
+
+
+java.sql.SQLIntegrityConstraintViolationException
