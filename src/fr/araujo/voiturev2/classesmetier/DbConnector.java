@@ -26,6 +26,13 @@ public class DbConnector {
 	static String pwd = "sio";
 	static Connection connectionOracleSQl;
 
+	/**
+	 * Permet de charger les Drivers ojdbc et d'établir la connexion vers la base de donnée.
+	 * @return {@link Connection}
+	 * @throws ClassNotFoundException
+	 * @throws SQLException
+	 * @throws Exception
+	 */
 	public static Connection chargeDriver() throws ClassNotFoundException, SQLException, Exception {
 		try {
 			Class.forName("oracle.jdbc.OracleDriver");
@@ -41,19 +48,35 @@ public class DbConnector {
 		}
 	}
 
-
+/**
+ * Execute une requete SQL et renvoie le résultat de cette requete. 
+ * @param sql
+ * @return {@link ResultSet}
+ * @throws SQLException
+ */
 	public static ResultSet chargeRequete(String sql) throws SQLException {
 		Statement statement = connectionOracleSQl.createStatement();
 		ResultSet result = statement.executeQuery(sql);
 		return result;
 	}
 
+	/**
+	 * Execute la commande SQL entrée en paramètre (type PreparedStatement)
+	 * @param sql
+	 * @throws SQLException
+	 */
 	public static void chargeUpdate(PreparedStatement sql) throws SQLException {
 		sql.executeUpdate();
 
 	}
 
-
+/**
+ * Permets l'initialisation des voitures (objet de la classe Voiture rangé dans un Hashmap de voiture ayant pour clé l'id de la voiture)
+ *  ayant pour id de garage le paramètre idGarage (type int)
+ * @param idGarage
+ * @return Hasmap<Integer, Voiture>
+ * @throws SQLException
+ */
 	public static HashMap<Integer, Voiture> initVoitures(int idGarage) throws SQLException {
 
 		HashMap<Integer, Voiture> voitures = new HashMap<Integer, Voiture>();
@@ -92,7 +115,13 @@ public class DbConnector {
 
 	}
 
-
+/**
+ * Permets l'initialisation des garages (objet de la classe Garage rangé 
+ * dans un Hashmap de voiture ayant pour clé l'id du garage)
+ *  de la base de donnée dans l'application.
+ * @return Hashmap<Integer, Garage> 
+ * @throws SQLException
+ */
 	public static HashMap<Integer, Garage> initgarage() throws SQLException {
 		String sql = "select * from garage";
 		HashMap<Integer, Garage> garages = new HashMap<Integer, Garage>() ;
@@ -112,7 +141,13 @@ public class DbConnector {
 		return garages;
 	}
 
-
+/**
+ * Prends en paramètre une id (type integer) et retourne la marque (objet de la classe Marque)
+ * ayant pour clé primaire l'id
+ * @param id
+ * @return Marque
+ * @throws Exception
+ */
 	public static Marque getMarque(int id) throws Exception {
 		Marque marque;
 		ResultSet result;
@@ -139,6 +174,14 @@ public class DbConnector {
 	}
 
 
+	/**
+	 * Prends en paramètre un tableau de type String et une id de garage (type integer),
+	 *  et ajoute une voiture au programme.
+	 * Si celui-ci est possible, ajoute la voiture 
+	 * via addVoitureSql(Voiture voiture, Integer idGarage)
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void addVoiture(String[] args, Integer idGarage) throws Exception {
 		try {
 
@@ -181,12 +224,24 @@ public class DbConnector {
 
 	}
 
+	
+	/**
+	 * Prends en paramètre un tableau de type String (et mets idGarage à null), et ajoute une voiture au programme.
+	 * Si celui-ci est possible, ajoute la voiture via addVoitureSql(Voiture voiture, Integer idGarage)
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void addVoiture(String[] args) throws Exception {
 		addVoiture(args, null);
 	}
 
 
-
+/**
+ * Méthode qui prends en parametre une voiture (objet de la classe Voiture) et
+ * une id de garage (type integer) et l'ajoute dans la base de donnée via chargeUpdate().
+ * @param voiture
+ * @param idGarage
+ */
 	public static void addVoitureSql(Voiture voiture, Integer idGarage) {
 
 		try {
