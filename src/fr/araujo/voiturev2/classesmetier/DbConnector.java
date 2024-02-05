@@ -37,7 +37,7 @@ public class DbConnector {
 		try {
 			Class.forName("oracle.jdbc.OracleDriver");
 			System.out.println("Test connexion");
-			connectionOracleSQl = DriverManager.getConnection(url, nom, pwd);
+			connectionOracleSQl = DriverManager.getConnection(url2, nom, pwd);
 			System.out.println("Connexion établi");
 			return connectionOracleSQl;
 
