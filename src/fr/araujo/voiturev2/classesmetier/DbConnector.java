@@ -38,7 +38,7 @@ public class DbConnector {
 		try {
 			Class.forName("oracle.jdbc.OracleDriver");
 			System.out.println("Test connexion");
-			connectionOracleSQl = DriverManager.getConnection(url, nom, pwd);
+			connectionOracleSQl = DriverManager.getConnection(url2, nom, pwd);
 			System.out.println("Connexion établi");
 			return connectionOracleSQl;
 
@@ -242,7 +242,7 @@ public class DbConnector {
  * @param voiture
  * @param idGarage
  */
-	public static void addVoitureSql(Voiture voiture, Integer idGarage) {
+	private static void addVoitureSql(Voiture voiture, Integer idGarage) {
 
 		try {
 			PreparedStatement sql = connectionOracleSQl.prepareStatement("insert into voiture (id, capacitereservoir, couleur, anneemiseenservice, nbkilometrescompteur, nblitrescontenus, prixachat, idmarque, idgarage ) values (?,?,?,?,?,?,?,?,?)");
@@ -283,10 +283,9 @@ public class DbConnector {
 	}
 	
 	
-	public static void deleteSql(String table, int id) throws SQLException {
-		PreparedStatement sql = connectionOracleSQl.prepareStatement("DELETE FROM ? where id = ?");
-		sql.setString(1, table);
-		sql.setInt(2, id);
+	private static void deleteSql(String table, int id) throws SQLException {
+		PreparedStatement sql = connectionOracleSQl.prepareStatement("DELETE FROM " + table + " where id = ?");
+		sql.setInt(1, id);
 		chargeUpdate(sql);
 		System.out.println("=====Suppresion de la donnée dans la base de donnée éffectué avec succès=====");
 		

@@ -56,6 +56,7 @@ public class Programme {
 			DbConnector.chargeDriver();
 			HashMap<Integer, Garage> garages = DbConnector.initgarage();
 			System.out.println("Garage initialisé.");
+			DbConnector.deleteVoiture(4, 1);
 			String[] variable = {"4", "100.00", "Rouge", "2014", "70", "10", "1500", "1"};
 			DbConnector.addVoiture(variable);
 			
