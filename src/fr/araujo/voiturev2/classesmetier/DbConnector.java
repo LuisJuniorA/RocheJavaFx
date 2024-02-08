@@ -20,6 +20,7 @@ import fr.araujo.voiturev2.enumerations.Nationalite;
  */
 public class DbConnector {
 	//init driver db
+	static HashMap<Integer, Garage> garages = new HashMap<Integer, Garage>() ;
 	static String url = "jdbc:oracle:thin:@freesio.lyc-bonaparte.fr:21521:slam";
 	static String url2 = "jdbc:oracle:thin:@10.10.2.10:1521:slam";
 	static String nom = "araujoapslam";
@@ -37,7 +38,7 @@ public class DbConnector {
 		try {
 			Class.forName("oracle.jdbc.OracleDriver");
 			System.out.println("Test connexion");
-			connectionOracleSQl = DriverManager.getConnection(url2, nom, pwd);
+			connectionOracleSQl = DriverManager.getConnection(url, nom, pwd);
 			System.out.println("Connexion établi");
 			return connectionOracleSQl;
 
@@ -124,7 +125,6 @@ public class DbConnector {
  */
 	public static HashMap<Integer, Garage> initgarage() throws SQLException {
 		String sql = "select * from garage";
-		HashMap<Integer, Garage> garages = new HashMap<Integer, Garage>() ;
 		try {
 			ResultSet result = chargeRequete(sql);
 			while (result.next()) {
@@ -268,9 +268,28 @@ public class DbConnector {
 
 	}
 
+	
+	public static void deleteVoiture(int idVoiture, int idGarage) {
+		try {
+			HashMap<Integer, Voiture> voitures = garages.get(idGarage).voitures;
+			deleteSql("VOITURE", idVoiture);
+			voitures.remove(idVoiture);
+			System.out.println("=====Suppresion de la voiture dans la base de donnée éffectué avec succès=====");
 
-	//public static Garage chargerVoituresGarage(Garage garage) {
-	//return garage.
-	//}
+		} catch (SQLException e) {
+			System.out.println("|||||Erreur lors de la supression de la voiture dans la base de données, veuillez contactez la personne en charge de l'application.|||||");
+			e.printStackTrace();
+		}
+	}
+	
+	
+	public static void deleteSql(String table, int id) throws SQLException {
+		PreparedStatement sql = connectionOracleSQl.prepareStatement("DELETE FROM ? where id = ?");
+		sql.setString(1, table);
+		sql.setInt(2, id);
+		chargeUpdate(sql);
+		System.out.println("=====Suppresion de la donnée dans la base de donnée éffectué avec succès=====");
+		
+	}
 
 }
