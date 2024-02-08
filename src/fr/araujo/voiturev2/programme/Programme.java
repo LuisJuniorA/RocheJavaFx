@@ -57,9 +57,17 @@ public class Programme {
 			HashMap<Integer, Garage> garages = DbConnector.initgarage();
 			System.out.println("Garage initialisé.");
 			DbConnector.deleteVoiture(4, 1);
-			String[] variable = {"4", "100.00", "Rouge", "2014", "70", "10", "1500", "1"};
+			Voiture variable = new Voiture(4, 100.00, Couleur.Rouge, 2014, 70, 10, 1500, DbConnector.getMarque(1));
+			DbConnector.addVoiture(variable, 1);
+			variable = new Voiture(5, 100.00, Couleur.Rouge, 2014, 70, 10, 1500, DbConnector.getMarque(1));
+			DbConnector.addVoiture(variable, 2);
+			variable = new Voiture(7, 100.00, Couleur.Rouge, 2014, 70, 10, 1500, DbConnector.getMarque(1));
 			DbConnector.addVoiture(variable);
+			DbConnector.updateVoiture(5, 100.00, Couleur.Rouge, 2017, 70, 10.2, 1590, 2, 2);
+			DbConnector.updateVoiture(5, 100.00, Couleur.Rouge, 2017, 70, 10.2, 1590, 2, null);
+			DbConnector.deleteVoiture(5, 2);
 			
+			DbConnector.deleteVoiture(7, null);
 			
 			//System.out.println(garages.get(1));
 			

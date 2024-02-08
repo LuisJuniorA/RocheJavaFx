@@ -10,16 +10,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.util.HashMap;
 
 import fr.araujo.voiturev2.enumerations.Couleur;
 import fr.araujo.voiturev2.enumerations.Nationalite;
 
 /**
- * 
+ * Classe permettant toutes interactions entre l'application et la base de donnée.
  */
 public class DbConnector {
-	//init driver db
 	static HashMap<Integer, Garage> garages = new HashMap<Integer, Garage>() ;
 	static String url = "jdbc:oracle:thin:@freesio.lyc-bonaparte.fr:21521:slam";
 	static String url2 = "jdbc:oracle:thin:@10.10.2.10:1521:slam";
@@ -49,12 +49,12 @@ public class DbConnector {
 		}
 	}
 
-/**
- * Execute une requete SQL et renvoie le résultat de cette requete. 
- * @param sql
- * @return {@link ResultSet}
- * @throws SQLException
- */
+	/**
+	 * Execute une requete SQL et renvoie le résultat de cette requete. 
+	 * @param sql
+	 * @return {@link ResultSet}
+	 * @throws SQLException
+	 */
 	public static ResultSet chargeRequete(String sql) throws SQLException {
 		Statement statement = connectionOracleSQl.createStatement();
 		ResultSet result = statement.executeQuery(sql);
@@ -71,13 +71,13 @@ public class DbConnector {
 
 	}
 
-/**
- * Permets l'initialisation des voitures (objet de la classe Voiture rangé dans un Hashmap de voiture ayant pour clé l'id de la voiture)
- *  ayant pour id de garage le paramètre idGarage (type int)
- * @param idGarage
- * @return Hasmap<Integer, Voiture>
- * @throws SQLException
- */
+	/**
+	 * Permets l'initialisation des voitures (objet de la classe Voiture rangé dans un Hashmap de voiture ayant pour clé l'id de la voiture)
+	 *  ayant pour id de garage le paramètre idGarage (type int)
+	 * @param idGarage
+	 * @return Hasmap<Integer, Voiture>
+	 * @throws SQLException
+	 */
 	public static HashMap<Integer, Voiture> initVoitures(int idGarage) throws SQLException {
 
 		HashMap<Integer, Voiture> voitures = new HashMap<Integer, Voiture>();
@@ -116,13 +116,13 @@ public class DbConnector {
 
 	}
 
-/**
- * Permets l'initialisation des garages (objet de la classe Garage rangé 
- * dans un Hashmap de voiture ayant pour clé l'id du garage)
- *  de la base de donnée dans l'application.
- * @return Hashmap<Integer, Garage> 
- * @throws SQLException
- */
+	/**
+	 * Permets l'initialisation des garages (objet de la classe Garage rangé 
+	 * dans un Hashmap de voiture ayant pour clé l'id du garage)
+	 *  de la base de donnée dans l'application.
+	 * @return Hashmap<Integer, Garage> 
+	 * @throws SQLException
+	 */
 	public static HashMap<Integer, Garage> initgarage() throws SQLException {
 		String sql = "select * from garage";
 		try {
@@ -141,13 +141,13 @@ public class DbConnector {
 		return garages;
 	}
 
-/**
- * Prends en paramètre une id (type integer) et retourne la marque (objet de la classe Marque)
- * ayant pour clé primaire l'id
- * @param id
- * @return Marque
- * @throws Exception
- */
+	/**
+	 * Prends en paramètre une id (type integer) et retourne la marque (objet de la classe Marque)
+	 * ayant pour clé primaire l'id
+	 * @param id
+	 * @return Marque
+	 * @throws Exception
+	 */
 	public static Marque getMarque(int id) throws Exception {
 		Marque marque;
 		ResultSet result;
@@ -159,11 +159,11 @@ public class DbConnector {
 		}
 		catch(SQLException e) {
 			e.printStackTrace();
-			throw new Exception("Erreur lors de la requete SQL dans la méthode getMarque");
+			throw new Exception("|||||Erreur lors de la requete SQL dans la méthode getMarque|||||");
 		}
 		catch(Exception e) {
 			e.printStackTrace();
-			throw new Exception("Erreur inconnu dans la méthode getMarque");
+			throw new Exception("|||||Erreur inconnu dans la méthode getMarque|||||");
 		}
 		result.next();
 		marque = new Marque(result.getInt("ID"),result.getString("Nom") ,Nationalite.valueOf(result.getString("Nationalite")));
@@ -173,89 +173,126 @@ public class DbConnector {
 
 	}
 
+	/**
+	 * Prends en paramètre la requête sql, une voiture, et un id de garage, afin d'ajouter les valeurs de la voiture dans la requête.
+	 * @param sql
+	 * @param voiture
+	 * @param idGarage
+	 * @throws SQLException
+	 */
+	private static void chargePreparedStatementVoiture(PreparedStatement sql, Voiture voiture, Integer idGarage) throws SQLException {
+		sql.setInt(1, voiture.getId());
+		sql.setDouble(2, voiture.getCapaciteReservoir());
+		sql.setString(3, voiture.getCouleur().name());
+		sql.setInt(4, voiture.getAnneeMiseEnService());
+		sql.setInt(5, voiture.getNbKilometresCompteur());
+		sql.setDouble(6, voiture.getNbLitresContenus());
+		sql.setDouble(7, voiture.getPrixAchat());
+		sql.setInt(8, voiture.getMarque().getId());
+		sql.setObject(9, idGarage, java.sql.Types.INTEGER);
+		chargeUpdate(sql);
+	}
 
 	/**
-	 * Prends en paramètre un tableau de type String et une id de garage (type integer),
-	 *  et ajoute une voiture au programme.
-	 * Si celui-ci est possible, ajoute la voiture 
-	 * via addVoitureSql(Voiture voiture, Integer idGarage)
-	 * @param args
-	 * @throws Exception
+	 * Prends en paramètre les informations nécessaire à la création d'une voiture pour l'ajouter dans la base de donnée.
+	 * @param id
+	 * @param capaciteReservoir
+	 * @param couleur
+	 * @param anneeMiseEnService
+	 * @param nbKilometresCompteur
+	 * @param nbLitresContenus
+	 * @param prixAchat
+	 * @param idMarque
+	 * @param idGarage
 	 */
-	public static void addVoiture(String[] args, Integer idGarage) throws Exception {
+	public static void addVoiture(int id, double capaciteReservoir, Couleur couleur, int anneeMiseEnService, int nbKilometresCompteur,
+			double nbLitresContenus, int prixAchat, int idMarque, Integer idGarage) {
 		try {
-
-			int id = Integer.valueOf(args[0]);
-			double capaciteReservoir = Double.valueOf(args[1]);
-			Couleur couleur = Couleur.valueOf(args[2]);
-			int anneemiseenservice;
-			int nbKilometresCompteur;
-			double nbLitresContenus;
-			Voiture voiture;
-			int prixAchat;
-
-			if (args.length == 8) {
-				anneemiseenservice = Integer.valueOf(args[3]);
-				nbKilometresCompteur = Integer.valueOf(args[4]);
-				nbLitresContenus = Double.parseDouble(args[5]);
-				prixAchat = Integer.valueOf(args[6]);
-				int idMarque = Integer.valueOf(args[7]);
-				voiture = new Voiture(id, capaciteReservoir, couleur, anneemiseenservice, nbKilometresCompteur, nbLitresContenus, prixAchat,getMarque(idMarque));
-				System.out.println("=====Ajout de la voiture 8arguments effectué avec succès=====");
-			}
-			else if (args.length == 6) {
-				anneemiseenservice = Integer.valueOf(args[3]);
-				prixAchat = Integer.valueOf(args[3]);
-				int idMarque = Integer.valueOf(args[4]);
-				voiture = new Voiture(id, capaciteReservoir, couleur, anneemiseenservice, prixAchat,getMarque(idMarque));
-				System.out.println("=====Ajout de la voiture 6arguments effectué avec succès=====");
-			}
-			else {
-				prixAchat = Integer.valueOf(args[3]);
-				int idMarque = Integer.valueOf(args[4]);
-				voiture = new Voiture(id, capaciteReservoir, couleur, prixAchat,getMarque(idMarque));
-				System.out.println("=====Ajout de la voiture 5arguments effectué avec succès=====");
-			}
+			Voiture voiture = new Voiture(id, capaciteReservoir, couleur, anneeMiseEnService, nbKilometresCompteur, nbLitresContenus, prixAchat,getMarque(idMarque));
+			System.out.println("=====Ajout de la voiture 8 arguments effectué avec succès=====");
 			addVoitureSql(voiture, idGarage);
-
-		}catch (SQLException ex) {
-			ex.printStackTrace();
+		} catch (Exception ex) {
+			System.out.println(ex.getMessage());
 		}
-
 	}
 
-	
+
 	/**
-	 * Prends en paramètre un tableau de type String (et mets idGarage à null), et ajoute une voiture au programme.
-	 * Si celui-ci est possible, ajoute la voiture via addVoitureSql(Voiture voiture, Integer idGarage)
-	 * @param args
-	 * @throws Exception
+	 * Prends en paramètre les informations nécessaire à la création d'une voiture pour l'ajouter dans la base de donnée. Surcharge de la méthode addVoiture.
+	 * @param id
+	 * @param capaciteReservoir
+	 * @param couleur
+	 * @param anneeMiseEnService
+	 * @param prixAchat
+	 * @param idMarque
+	 * @param idGarage
 	 */
-	public static void addVoiture(String[] args) throws Exception {
-		addVoiture(args, null);
+	public static void addVoiture(int id, double capaciteReservoir, Couleur couleur,
+			int anneeMiseEnService, int prixAchat, int idMarque, Integer idGarage) {
+		addVoiture(id, capaciteReservoir, couleur, anneeMiseEnService, 0, 0.0, prixAchat,idMarque, idGarage);
+		System.out.println("=====Ajout de la voiture 6 arguments effectué avec succès=====");
 	}
 
 
-/**
- * Méthode qui prends en parametre une voiture (objet de la classe Voiture) et
- * une id de garage (type integer) et l'ajoute dans la base de donnée via chargeUpdate().
- * @param voiture
- * @param idGarage
- */
+	/**
+	 * Prends en paramètre les informations nécessaire à la création d'une voiture pour l'ajouter dans la base de donnée. Surcharge de la méthode addVoiture.
+	 * @param id
+	 * @param capaciteReservoir
+	 * @param couleur
+	 * @param prixAchat
+	 * @param idMarque
+	 * @param idGarage
+	 */
+	public static void addVoiture(int id, double capaciteReservoir, Couleur couleur,
+			int prixAchat, int idMarque, Integer idGarage) {
+		addVoiture(id, capaciteReservoir, couleur, LocalDate.now().getYear(), prixAchat,idMarque, idGarage);
+		System.out.println("=====Ajout de la voiture 5 arguments effectué avec succès=====");
+	}
+
+	/**
+	 * Prends en paramètre les informations nécessaire à la création d'une voiture pour l'ajouter dans la base de donnée. Surcharge de la méthode addVoiture.
+	 * @param id
+	 * @param capaciteReservoir
+	 * @param couleur
+	 * @param prixAchat
+	 * @param idMarque
+	 */
+	public static void addVoiture(int id, double capaciteReservoir, Couleur couleur,
+			int prixAchat, int idMarque) {
+		addVoiture(id, capaciteReservoir, couleur, LocalDate.now().getYear(), prixAchat,idMarque, null);
+		System.out.println("=====Ajout de la voiture 5 arguments effectué avec succès=====");
+	}
+
+	/**
+	 * Prends en paramètre une voiture pour l'ajouter dans la base de donnée. Surcharge de la méthode addVoiture.
+	 * @param voiture
+	 * @param idGarage
+	 */
+	public static void addVoiture(Voiture voiture, Integer idGarage) {
+		addVoitureSql(voiture, idGarage);
+		System.out.println("=====Ajout de la voiture via Voiture effectué avec succès=====");
+	}
+
+	/**
+	 * * Prends en paramètre une voiture pour l'ajouter dans la base de donnée. Surcharge de la méthode addVoiture.
+	 * @param voiture
+	 */
+	public static void addVoiture(Voiture voiture) {
+		addVoiture(voiture, null);
+	}
+
+
+	/**
+	 * Méthode qui prends en parametre une voiture (objet de la classe Voiture) et
+	 * une id de garage (type integer) et l'ajoute dans la base de donnée via chargeUpdate().
+	 * @param voiture
+	 * @param idGarage
+	 */
 	private static void addVoitureSql(Voiture voiture, Integer idGarage) {
 
 		try {
 			PreparedStatement sql = connectionOracleSQl.prepareStatement("insert into voiture (id, capacitereservoir, couleur, anneemiseenservice, nbkilometrescompteur, nblitrescontenus, prixachat, idmarque, idgarage ) values (?,?,?,?,?,?,?,?,?)");
-			sql.setInt(1, voiture.getId());
-			sql.setDouble(2, voiture.getCapaciteReservoir());
-			sql.setString(3, voiture.getCouleur().name());
-			sql.setInt(4, voiture.getAnneeMiseEnService());
-			sql.setInt(5, voiture.getNbKilometresCompteur());
-			sql.setDouble(6, voiture.getNbLitresContenus());
-			sql.setDouble(7, voiture.getPrixAchat());
-			sql.setInt(8, voiture.getMarque().getId());
-			sql.setObject(9, idGarage, java.sql.Types.INTEGER);
-			chargeUpdate(sql);
+			chargePreparedStatementVoiture(sql, voiture, idGarage);
 			System.out.println("=====Ajout de la voiture dans la base de donnée éffectué avec succès=====");
 		} catch (SQLIntegrityConstraintViolationException ex) {
 			System.out.println("|||||Erreur de contrainte d'intégrité référentiel SQL lors de l'ajout de la voiture dans la base de données, veuillez contactez la personne en charge de l'application.|||||");
@@ -268,12 +305,18 @@ public class DbConnector {
 
 	}
 
-	
-	public static void deleteVoiture(int idVoiture, int idGarage) {
+	/**
+	 * Prends en paramètre un id de voiture et un id de garage afin de supprimer dans le programme et dans la base de donnée la voiture.
+	 * @param idVoiture
+	 * @param idGarage
+	 */
+	public static void deleteVoiture(int idVoiture, Integer idGarage) {
 		try {
-			HashMap<Integer, Voiture> voitures = garages.get(idGarage).voitures;
+			if (idGarage != null) {
+				HashMap<Integer, Voiture> voitures = garages.get(idGarage).voitures;
+				voitures.remove(idVoiture);
+			}
 			deleteSql("VOITURE", idVoiture);
-			voitures.remove(idVoiture);
 			System.out.println("=====Suppresion de la voiture dans la base de donnée éffectué avec succès=====");
 
 		} catch (SQLException e) {
@@ -281,14 +324,60 @@ public class DbConnector {
 			e.printStackTrace();
 		}
 	}
-	
-	
+
+	/**
+	 * Prends en paramètre une table et un id et supprime les valeurs correspondantes dans la table.
+	 * @param table
+	 * @param id
+	 * @throws SQLException
+	 */
 	private static void deleteSql(String table, int id) throws SQLException {
 		PreparedStatement sql = connectionOracleSQl.prepareStatement("DELETE FROM " + table + " where id = ?");
 		sql.setInt(1, id);
 		chargeUpdate(sql);
 		System.out.println("=====Suppresion de la donnée dans la base de donnée éffectué avec succès=====");
-		
+
 	}
+
+
+	/**
+	 * Prends en paramètre les données d'une voiture afin de la changer dans la base de donnée.
+	 * @param id
+	 * @param capaciteReservoir
+	 * @param couleur
+	 * @param anneeMiseEnService
+	 * @param nbKilometresCompteur
+	 * @param nbLitresContenus
+	 * @param prixAchat
+	 * @param idMarque
+	 * @param idGarage
+	 */
+	public static void updateVoiture(int id, double capaciteReservoir, Couleur couleur, int anneeMiseEnService, int nbKilometresCompteur,
+			double nbLitresContenus, int prixAchat, int idMarque, Integer idGarage) {
+		try {
+			Voiture voiture = new Voiture(id, capaciteReservoir, couleur, anneeMiseEnService, nbKilometresCompteur, nbLitresContenus, prixAchat, getMarque(idMarque));
+			PreparedStatement sql = connectionOracleSQl.prepareStatement("update VOITURE set id = ?, capacitereservoir = ?, couleur = ?, anneemiseenservice = ?, nbkilometrescompteur = ?, nblitrescontenus = ?,prixachat = ?, idmarque = ?, idgarage = ?  where id = " + id );
+			chargePreparedStatementVoiture(sql, voiture, idGarage);
+			System.out.println("=====Update de la voiture dans la base de donnée éffectué avec succès=====");
+		} catch (SQLIntegrityConstraintViolationException ex) {
+			System.out.println("|||||Erreur de contrainte d'intégrité référentiel SQL lors de l'update de la voiture dans la base de données, veuillez contactez la personne en charge de l'application.|||||");
+		} catch (SQLException ex) {
+			System.out.println("|||||Erreur SQL lors de l'update de la voiture dans la base de données, veuillez contactez la personne en charge de l'application.|||||");
+			System.out.println(ex.getMessage());
+		} catch (Exception ex) {
+			System.out.println("|||||Erreur inconnu lors de l'update de la voiture dans la base de données, veuillez contactez la personne en charge de l'application.|||||");
+			ex.printStackTrace();
+		}
+
+
+	}
+
+
+
+
+
+
+
+
 
 }
